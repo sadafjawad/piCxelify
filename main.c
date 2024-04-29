@@ -6,6 +6,7 @@
 #include "./stb_image_resize.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <gtk/gtk.h>
 
 int pixelate(const char *input_filename, const char *output_filename, int new_width, int new_height)
 {
@@ -57,9 +58,14 @@ int pixelate(const char *input_filename, const char *output_filename, int new_wi
     return 0;
 }
 
+void closeApp(GtkWidget *widget, gpointer data)
+{
+    gtk_main_quit();
+}
+
 int main(int argc, char **argv)
 {
-    // check args
+    //  check args
     if (argc < 5)
     {
         fprintf(stderr, "Usage: <input file> <output file> <new width> <new height>\n");
@@ -73,5 +79,16 @@ int main(int argc, char **argv)
     int new_height = atoi(argv[4]);
 
     // pixelate image
+    gtk_init(&argc, &argv);
+    GtkWidget *window;
+    GtkWidget *button;
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(window, "closeApp", G_CALLBACK(closeApp), NULL);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 30);
+    button = gtk_button_new_with_label("close");
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(closeApp), "button");
+    gtk_container_add(GTK_CONTAINER(window), button);
+    gtk_widget_show_all(window);
+    gtk_main();
     return pixelate(input_filename, output_filename, new_width, new_height);
 }
