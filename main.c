@@ -10,16 +10,12 @@
 
 GtkWidget *label;
 char *filename = NULL;
-GtkWidget *widthEntry;  // Global entry widget for width
-GtkWidget *heightEntry; // Global entry widget for height
+GtkWidget *widthEntry; 
+GtkWidget *heightEntry;
 GtkWidget *outputEntry;
 
 int pixelate(const char *input_filename, const char *output_filename, int new_width, int new_height)
 {
-    printf("Input filename: %s\n", input_filename);
-    printf("Output filename: %s\n", output_filename);
-    printf("New width: %d\n", new_width);
-    printf("New height: %d\n", new_height);
     int width, height, channels;
 
     // reading the image file
