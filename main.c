@@ -75,7 +75,6 @@ void closeApp(GtkWidget *widget, gpointer data)
 
 void onSelect(GtkWidget *widget, gpointer data)
 {
-    // printf("reached");
     GtkWidget *box;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
     gint result;
