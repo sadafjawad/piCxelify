@@ -63,6 +63,26 @@ void closeApp(GtkWidget *widget, gpointer data)
     gtk_main_quit();
 }
 
+void onSelect(GtkWidget *widget, gpointer data)
+{
+    // printf("reached");
+    GtkWidget *box;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint result;
+    box = gtk_file_chooser_dialog_new("Open File", GTK_WINDOW(data), action, "_Cancel", GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, NULL);
+    result = gtk_dialog_run(GTK_DIALOG(box));
+    if (result == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(box);
+        filename = gtk_file_chooser_get_filename(chooser);
+        g_print("File selected: %s\n", filename);
+        g_free(filename);
+        // closeApp(GTK_WIDGET(gtk_widget_get_toplevel(GTK_WIDGET(widget))), NULL);
+    }
+    gtk_widget_destroy(box);
+}
+
 int main(int argc, char **argv)
 {
     //  check args
@@ -82,13 +102,22 @@ int main(int argc, char **argv)
     gtk_init(&argc, &argv);
     GtkWidget *window;
     GtkWidget *button;
+    GtkWidget *closeButton;
+    GtkWidget *vbox;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    g_signal_connect(window, "closeApp", G_CALLBACK(closeApp), NULL);
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+    g_signal_connect(window, "destroy", G_CALLBACK(closeApp), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window), 30);
-    button = gtk_button_new_with_label("close");
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(closeApp), "button");
-    gtk_container_add(GTK_CONTAINER(window), button);
+    button = gtk_button_new_with_label("Select file");
+    closeButton = gtk_button_new_with_label("Quit App");
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(onSelect), window);
+    g_signal_connect(G_OBJECT(closeButton), "clicked", G_CALLBACK(closeApp), window);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), closeButton, FALSE, FALSE, 0);
     gtk_widget_show_all(window);
     gtk_main();
-    return pixelate(input_filename, output_filename, new_width, new_height);
+    // return pixelate(input_filename, output_filename, new_width, new_height);
+    return 0;
 }
