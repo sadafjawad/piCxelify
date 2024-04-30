@@ -8,8 +8,18 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 
+GtkWidget *label;
+char *filename = NULL;
+GtkWidget *widthEntry;  // Global entry widget for width
+GtkWidget *heightEntry; // Global entry widget for height
+GtkWidget *outputEntry;
+
 int pixelate(const char *input_filename, const char *output_filename, int new_width, int new_height)
 {
+    printf("Input filename: %s\n", input_filename);
+    printf("Output filename: %s\n", output_filename);
+    printf("New width: %d\n", new_width);
+    printf("New height: %d\n", new_height);
     int width, height, channels;
 
     // reading the image file
@@ -73,51 +83,92 @@ void onSelect(GtkWidget *widget, gpointer data)
     result = gtk_dialog_run(GTK_DIALOG(box));
     if (result == GTK_RESPONSE_ACCEPT)
     {
-        char *filename;
+
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(box);
         filename = gtk_file_chooser_get_filename(chooser);
-        g_print("File selected: %s\n", filename);
-        g_free(filename);
+        gchar *new_text = g_strdup_printf("Image Source: %s", filename);
+
+        // Update label text with the formatted string
+        gtk_label_set_text(GTK_LABEL(label), new_text);
+
         // closeApp(GTK_WIDGET(gtk_widget_get_toplevel(GTK_WIDGET(widget))), NULL);
     }
     gtk_widget_destroy(box);
 }
 
+void onPixelate(GtkWidget *widget, gpointer data)
+{
+    const gchar *width_str = gtk_entry_get_text(GTK_ENTRY(widthEntry));
+    const gchar *height_str = gtk_entry_get_text(GTK_ENTRY(heightEntry));
+    const gchar *output_filename = gtk_entry_get_text(GTK_ENTRY(outputEntry));
+    int new_width = atoi(width_str);
+    int new_height = atoi(height_str);
+
+    // pixelate the image using pixelate function
+    pixelate(filename, output_filename, new_width, new_height);
+    closeApp(NULL, NULL);
+}
+
 int main(int argc, char **argv)
 {
     //  check args
-    if (argc < 5)
-    {
-        fprintf(stderr, "Usage: <input file> <output file> <new width> <new height>\n");
-        return 1;
-    }
+    // if (argc < 5)
+    // {
+    //     fprintf(stderr, "Usage: <input file> <output file> <new width> <new height>\n");
+    //     return 1;
+    // }
 
     // preprocess args
-    const char *input_filename = argv[1];
-    const char *output_filename = argv[2];
-    int new_width = atoi(argv[3]);
-    int new_height = atoi(argv[4]);
+    // const char *input_filename = argv[1];
+    // const char *output_filename = argv[2];
+    // int new_width = atoi(argv[3]);
+    // int new_height = atoi(argv[4]);
 
     // pixelate image
     gtk_init(&argc, &argv);
+
+    // create main window
     GtkWidget *window;
     GtkWidget *button;
     GtkWidget *closeButton;
+    GtkWidget *pixelateButton;
     GtkWidget *vbox;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
     g_signal_connect(window, "destroy", G_CALLBACK(closeApp), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window), 30);
+
+    // create buttons and label
     button = gtk_button_new_with_label("Select file");
     closeButton = gtk_button_new_with_label("Quit App");
+    pixelateButton = gtk_button_new_with_label("Pixelate");
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(onSelect), window);
     g_signal_connect(G_OBJECT(closeButton), "clicked", G_CALLBACK(closeApp), window);
+    g_signal_connect(G_OBJECT(pixelateButton), "clicked", G_CALLBACK(onPixelate), window);
+    label = gtk_label_new("");
+
+    // user inputs
+    widthEntry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(widthEntry), "New Image Width");
+    heightEntry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(heightEntry), "New Image Height");
+    outputEntry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(outputEntry), "Output File Name");
+
+    // create box to hold buttons
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_container_add(GTK_CONTAINER(window), vbox);
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), closeButton, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), widthEntry, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), heightEntry, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), outputEntry, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), pixelateButton, FALSE, FALSE, 0);
+
     gtk_widget_show_all(window);
     gtk_main();
-    // return pixelate(input_filename, output_filename, new_width, new_height);
+    g_free(filename);
+
     return 0;
 }
